@@ -740,9 +740,8 @@ Single-forbidden-graph lemma: `ex(n; H) = Θ(n)` iff the non-isolated part of
 `H` is a forest with at least two edges.
 -/
 axiom singleForbiddenGraphLemma (H : FiniteSimpleGraph.{u}) :
-    IsThetaLinear (fun n : ℕ => H.extremal n) ↔
-      H.forestAfterDeletingIsolated ∧
-        H.atLeastTwoEdgesAfterDeletingIsolated
+    IsThetaLinear (fun n : ℕ => H.extremal n) →
+      H.atLeastTwoEdgesAfterDeletingIsolated
 
 /--
 If every edge of a finite graph meets a finite vertex set `T`, and every vertex
@@ -1558,7 +1557,7 @@ theorem families_star_matching_pair_Theta_one
     extremalFamily_le_of_forall_edgeCount_le F C hC
   have hTwo : ∀ i : ι, (F i).atLeastTwoEdgesAfterDeletingIsolated := by
     intro i
-    exact ((singleForbiddenGraphLemma (F i)).mp (hlinear i)).2
+    exact singleForbiddenGraphLemma (F i) (hlinear i)
   exact isThetaConstant_of_forall_le_of_eventually_one_le
     (fun n : ℕ => extremalFamily F n) C hUpper
     (oneEdgeConstruction_extremalFamily_eventually_one_le F hTwo)
@@ -1577,7 +1576,7 @@ theorem families_no_star_matching_pair
     extremalFamily_isOLinear_of_member F i0 (hlinear i0)
   have hTwo : ∀ i : ι, (F i).atLeastTwoEdgesAfterDeletingIsolated := by
     intro i
-    exact ((singleForbiddenGraphLemma (F i)).mp (hlinear i)).2
+    exact singleForbiddenGraphLemma (F i) (hlinear i)
   have hLower : IsOmegaLinear (fun n : ℕ => extremalFamily F n) := by
     by_cases hStar : ∃ i : ι, (F i).starAfterDeletingIsolated
     · have hNoMatching : ∀ j : ι, ¬ (F j).matchingAfterDeletingIsolated := by
