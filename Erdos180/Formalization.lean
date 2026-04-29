@@ -124,6 +124,33 @@ theorem isOConstant_of_forall_le (f : ℕ → ℕ) (C : ℕ)
     exact_mod_cast hC n
   simpa using hreal
 
+/-- The natural-valued identity function is not `O(1)`. -/
+lemma not_natCast_isBigO_one :
+    ¬ ((fun n : ℕ => (n : ℝ)) =O[Filter.atTop] (fun _ : ℕ => (1 : ℝ))) := by
+  intro h
+  rcases h.bound with ⟨C, hC⟩
+  rw [Filter.eventually_atTop] at hC
+  rcases hC with ⟨N, hN⟩
+  rcases exists_nat_gt (max C (N : ℝ)) with ⟨n, hn⟩
+  have hnN_real : (N : ℝ) < (n : ℝ) :=
+    lt_of_le_of_lt (le_max_right C (N : ℝ)) hn
+  have hnN : N ≤ n := by
+    exact_mod_cast (le_of_lt hnN_real)
+  have hnC : C < (n : ℝ) :=
+    lt_of_le_of_lt (le_max_left C (N : ℝ)) hn
+  have hbound := hN n hnN
+  have hle : (n : ℝ) ≤ C := by
+    simpa using hbound
+  exact not_lt_of_ge hle hnC
+
+/-- A natural-valued function that is `O(1)` is not `Θ(n)`. -/
+lemma not_isThetaLinear_of_isOConstant (f : ℕ → ℕ) :
+    IsOConstant f → ¬ IsThetaLinear f := by
+  intro hO hTheta
+  unfold IsOConstant at hO
+  unfold IsThetaLinear at hTheta
+  exact not_natCast_isBigO_one (hTheta.isBigO_symm.trans hO)
+
 /-- An eventually positive natural-valued function is bounded below by a
 positive constant, asymptotically. -/
 theorem isOmegaConstant_of_eventually_one_le (f : ℕ → ℕ)
