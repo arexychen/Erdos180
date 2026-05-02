@@ -14,4 +14,5 @@
 # Agent / experimental files
 *.before
 *.before-agent-attempt
-phase*-report.md
+Erdos180/*.before*
+*.before-*
