@@ -1,0 +1,170 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newcommand{\ex}{\operatorname{ex}}
+
+\title{A Star-Matching Dichotomy for the Family Extremal Number,\\
+       after Hunter's Counterexample}
+\author{KJ\_C}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This note records a small dichotomy concerning Erd\H{o}s Problem~\#180 in
+the regime where every individual forbidden graph has linear extremal
+number. After Hunter's folklore counterexample to the original conjecture,
+the open question is what remains true in this regime; the dichotomy
+below is one such statement. The argument is elementary, the result is
+likely folklore. The accompanying repository contains a Lean~4
+formalization in which the corresponding theorem is proved from Lean's
+foundational axioms only.
+\end{abstract}
+
+All graphs are finite and simple, and subgraph means not necessarily induced.
+For a graph \(H\), write \(H^\circ\) for the graph obtained by deleting all
+isolated vertices.
+
+\section*{1. Background and statement}
+
+Erd\H{o}s Problem~\#180 asks, in its original form, whether the family
+extremal number \(\ex(n;\mathcal F)\) is determined by the individual
+extremal numbers \(\ex(n;H)\) for \(H\in\mathcal F\), in some natural sense.
+On the problem's forum, Zach Hunter recorded the following \emph{folklore
+counterexample}: if \(\mathcal F=\{K_{1,a},\,bK_2\}\) with \(a,b\ge 2\),
+then \(\ex(n;\mathcal F)=O_{\mathcal F}(1)\), while each individual
+\(\ex(n;H_i)=\Theta(n)\). The conjecture as stated therefore fails in
+general.
+
+The remaining open question, framed on the problem page, is what holds
+\emph{outside} this obstruction. The dichotomy below addresses this in the
+all-linear regime: when every \(\ex(n;H)\) for \(H\in\mathcal F\) is
+\(\Theta(n)\), the family extremal number is either \(\Theta(1)\) (and
+this happens precisely when the star/matching obstruction is present) or
+\(\Theta(n)\) (otherwise).
+
+We do not claim the dichotomy itself is new. The proof uses only standard
+tools and the result is plausibly folklore; the Lean formalization in the
+accompanying repository is the contribution this note primarily exists to
+document.
+
+\section*{2. The single-forbidden-graph lemma (used as input)}
+
+The proof relies on the following standard characterization, used as a
+black box.
+
+\begin{lemma}[Used; not proved here]
+Let \(H\) be a finite graph. Then \(\ex(n;H)=\Theta(n)\) if and only if
+\(H^\circ\) is a forest with at least two edges.
+\end{lemma}
+
+This is folklore in extremal graph theory; references include
+Bollob\'as's \emph{Extremal Graph Theory} and Diestel's \emph{Graph
+Theory}. The forward direction (forest with \(\ge 2\) edges \(\Rightarrow\)
+\(\Theta(n)\)) follows from a degeneracy argument paired with star or
+matching constructions. The converse (\(H^\circ\) contains a cycle
+\(\Rightarrow\) \(\ex(n;H)\) is super-linear) follows from
+Erd\H{o}s's high-girth/high-chromatic-number probabilistic construction.
+
+In the Lean formalization, only the implication
+\[
+\ex(n;H)=\Theta(n) \;\Longrightarrow\; H^\circ \text{ has at least two edges}
+\]
+is actually used by the dispatch in Theorem~\ref{thm:main} below; the
+other direction and the forest conclusion are not consumed. The
+formalization therefore proves a weakened version sufficient for the
+dispatch.
+
+\section*{3. The dichotomy}
+
+\begin{theorem}\label{thm:main}
+Let \(\mathcal F\) be a nonempty finite family of finite graphs with
+\[
+\ex(n;H)=\Theta(n) \qquad \text{for every } H\in\mathcal F.
+\]
+Then exactly one of the following holds:
+
+\begin{enumerate}
+\item[\textup{(i)}] \(\mathcal F\) contains, after deleting isolated vertices,
+both \(K_{1,a}\) and \(bK_2\) for some \(a,b\ge 2\). In this case
+\(\ex(n;\mathcal F)=\Theta(1)\).
+
+\item[\textup{(ii)}] \(\mathcal F\) contains no such star/matching pair. In
+this case \(\ex(n;\mathcal F)=\Theta(n)\).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By the lemma above, every \(H^\circ\) with \(H\in\mathcal F\) is a forest
+with at least two edges.
+
+\emph{Case (i).} Suppose \(\mathcal F\) contains both \(K_{1,a}\) and
+\(bK_2\) with \(a,b\ge 2\). Let \(G\) be \(\mathcal F\)-free. Then
+\(\Delta(G)\le a-1\) (else \(G\) contains \(K_{1,a}\)) and
+\(\nu(G)\le b-1\) (else \(G\) contains \(bK_2\)). Let \(M\) be a maximum
+matching. Since \(M\) is maximal, every edge of \(G\) has an endpoint in
+\(V(M)\). Therefore
+\[
+e(G)\le\sum_{v\in V(M)}d_G(v)\le |V(M)|\cdot\Delta(G)\le 2(b-1)(a-1).
+\]
+So \(\ex(n;\mathcal F)=O(1)\). Since every member of \(\mathcal F\) has
+at least two edges, a single edge is \(\mathcal F\)-free, giving
+\(\ex(n;\mathcal F)\ge 1\). Hence \(\ex(n;\mathcal F)=\Theta(1)\).
+
+\emph{Case (ii).} Suppose \(\mathcal F\) contains no such star/matching
+pair. The upper bound is immediate: choose any \(H_0\in\mathcal F\); every
+\(\mathcal F\)-free graph is \(H_0\)-free, so
+\(\ex(n;\mathcal F)\le\ex(n;H_0)=O(n)\).
+
+For the lower bound: if no member of \(\mathcal F\) is, after deleting
+isolated vertices, a star, then \(K_{1,n-1}\) is \(\mathcal F\)-free
+(every nonempty subgraph of a star is a star after deleting isolated
+vertices), giving \(\ex(n;\mathcal F)\ge n-1\). Otherwise, some member
+is a star, but by hypothesis no member is a matching with at least two
+edges; hence a maximum matching on \(n\) vertices is \(\mathcal F\)-free,
+giving \(\ex(n;\mathcal F)\ge\lfloor n/2\rfloor\). In both subcases
+\(\ex(n;\mathcal F)=\Omega(n)\), and combined with the upper bound we
+obtain \(\ex(n;\mathcal F)=\Theta(n)\).
+\end{proof}
+
+\section*{4. Notes}
+
+\paragraph{Relation to \#180.} Theorem~\ref{thm:main} is not a resolution
+of \#180. It addresses the all-linear regime under the assumption that
+every individual member has linear extremal number, and within that
+regime exhibits the star/matching obstruction (Hunter's case) as the
+unique pattern producing constant family extremal number.
+
+\paragraph{Constants in Case~(i).} The argument above gives the explicit
+bound \(e(G)\le 2(a-1)(b-1)\). The Lean formalization establishes a
+slightly weaker bound, \(O(|V(F_{\mathrm{star}})|\cdot |V(F_{\mathrm{matching}})|)\),
+because of how isolated vertices in family members were handled in the
+formalization; both bounds give \(\Theta(1)\), but the explicit constants
+differ.
+
+\paragraph{What the formalization establishes.} The Lean theorem
+\verb|familiesTheorem| is exactly the statement of Theorem~\ref{thm:main}
+above, formalized in Lean~4 against \texttt{Mathlib4}. After replacement
+of all project-specific axioms,
+\verb|#print axioms familiesTheorem| reports only Lean's foundational
+axioms (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}).
+The formalization was carried out in approximately eight hours of
+agent wall-clock time.
+
+\paragraph{Acknowledgments.} The folklore counterexample is due to Zach
+Hunter, recorded on the Erd\H{o}s Problems forum thread for \#180. The
+problem itself is due to Erd\H{o}s and Simonovits. The accompanying Lean
+formalization was carried out by AI agents (Claude Sonnet~4.6 for initial
+problem identification, Claude Opus~4.7 for prompt design and
+verification, GPT-5.5 xhigh for Lean code generation).
+
+\paragraph{Document provenance.} This note was drafted by Claude
+Opus~4.7.
+
+\end{document}
