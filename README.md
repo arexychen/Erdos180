@@ -50,6 +50,11 @@ Hunter's `a = b = 2` example with `K_{1,2}` and `2K_2`, proves the
 individual linear hypotheses, proves the star/matching pair condition,
 and derives the constant family extremal bound from the dichotomy.
 
+The module [`Erdos180/Bridge.lean`](Erdos180/Bridge.lean) proves that
+the repository's `EmbedsAsSubgraph` predicate is equivalent to mathlib's
+`SimpleGraph.IsContained` relation and that the repository's
+`extremalNumber` agrees with `SimpleGraph.extremalNumber`.
+
 ## Run statistics
 
 - **6 lemmas** (5 #180-specific + 1 single-graph asymptotic) and the
