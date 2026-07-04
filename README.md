@@ -21,7 +21,8 @@ shows the original conjecture cannot hold in general.
   formalization addresses one specific sub-question — the all-linear
   regime — and uses only one direction of the classical
   single-forbidden-graph characterization.
-- **Verification**: `lake build` + `#print axioms Erdos180.familiesTheorem`.
+- **Verification**: `lake build` checks the guarded axiom audit for
+  `Erdos180.familiesTheorem`.
 
 ## What is formalized
 
@@ -77,9 +78,10 @@ These three are Lean 4's standard logical foundations (function
 extensionality, classical choice, quotient soundness). No
 project-specific axioms.
 
-This check is performed at the end of the aggregator
-[`Erdos180/Formalization.lean`](Erdos180/Formalization.lean), so it
-runs as part of every `lake build`.
+This audit is enforced by a `#guard_msgs` wrapper in
+[`Erdos180/Formalization.lean`](Erdos180/Formalization.lean). A
+`lake build` fails if the printed axiom set changes from
+`[propext, Classical.choice, Quot.sound]`.
 
 ## Strategy
 
