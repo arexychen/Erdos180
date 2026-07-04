@@ -45,6 +45,11 @@ all-linear regime: assuming every individual `ex(n; H)` for `H ∈ F` is
 This dichotomy is plausibly folklore. The contribution this repository
 primarily documents is the Lean formalization, not the dichotomy itself.
 
+The module [`Erdos180/Hunter.lean`](Erdos180/Hunter.lean) formalizes
+Hunter's `a = b = 2` example with `K_{1,2}` and `2K_2`, proves the
+individual linear hypotheses, proves the star/matching pair condition,
+and derives the constant family extremal bound from the dichotomy.
+
 ## Run statistics
 
 - **6 lemmas** (5 #180-specific + 1 single-graph asymptotic) and the
