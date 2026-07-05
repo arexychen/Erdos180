@@ -1,5 +1,7 @@
 # Erdős #180 — Star-Matching Dichotomy (Lean 4 formalization)
 
+![CI](https://github.com/arexychen/Erdos180/actions/workflows/ci.yml/badge.svg)
+
 A Lean 4 / Mathlib4 formalization of a partial result on
 [Erdős Problem #180](https://www.erdosproblems.com/180), specifically
 the star-matching dichotomy that emerges in the all-linear regime after
@@ -10,6 +12,11 @@ shows the original conjecture cannot hold in general.
 
 - **Main theorem**: `Erdos180.familiesTheorem` in
   [`Erdos180/Families/Theorem.lean`](Erdos180/Families/Theorem.lean).
+- **Structural variant**: `Erdos180.familiesTheoremStructural` in
+  [`Erdos180/Families/StructuralTheorem.lean`](Erdos180/Families/StructuralTheorem.lean)
+  replaces the asymptotic hypothesis (every member has `Θ(n)` extremal
+  number) with a checkable structural one (every member reduces to a
+  forest with ≥ 2 edges after deleting isolated vertices).
 - **Status**: Fully proved from Lean's foundational axioms only
   (`propext`, `Classical.choice`, `Quot.sound`). No project-specific
   axioms remain.
@@ -21,8 +28,10 @@ shows the original conjecture cannot hold in general.
   formalization addresses one specific sub-question — the all-linear
   regime — and uses only one direction of the classical
   single-forbidden-graph characterization.
-- **Verification**: `lake build` checks the guarded axiom audit for
-  `Erdos180.familiesTheorem`.
+- **Verification**: `lake build` checks guarded axiom audits
+  (`#guard_msgs in #print axioms`) for `Erdos180.familiesTheorem` and
+  every public theorem added in the hardening phase. CI runs the build
+  on every push.
 
 ## What is formalized
 
@@ -49,21 +58,40 @@ The module [`Erdos180/Hunter.lean`](Erdos180/Hunter.lean) formalizes
 Hunter's `a = b = 2` example with `K_{1,2}` and `2K_2`, proves the
 individual linear hypotheses, proves the star/matching pair condition,
 and derives the constant family extremal bound from the dichotomy.
+[`Erdos180/HunterGeneral.lean`](Erdos180/HunterGeneral.lean) generalizes
+the instantiation to the full family `{K_{1,a}, bK_2}` for all
+`a, b ≥ 2`.
 
 The module [`Erdos180/Bridge.lean`](Erdos180/Bridge.lean) proves that
 the repository's `EmbedsAsSubgraph` predicate is equivalent to mathlib's
 `SimpleGraph.IsContained` relation and that the repository's
 `extremalNumber` agrees with `SimpleGraph.extremalNumber`.
 
+The module [`Erdos180/Forest.lean`](Erdos180/Forest.lean) proves the
+upper-bound half of the forward direction of the folklore
+single-forbidden-graph characterization: if `H` reduces to a forest,
+then `ex(n; H) = O(n)`. The proof greedily embeds the forest leaf by
+leaf into any host of sufficiently large minimum degree, and bounds
+edge counts by host induction (delete a low-degree vertex, or embed).
+Combined with the dichotomy machinery this yields
+`familiesTheoremStructural`
+([`Erdos180/Families/StructuralTheorem.lean`](Erdos180/Families/StructuralTheorem.lean)),
+whose hypotheses are purely structural — no asymptotic assumption
+remains.
+
 ## Run statistics
 
-- **6 lemmas** (5 #180-specific + 1 single-graph asymptotic) and the
-  main theorem proved from `axiom`s.
+- **Initial formalization**: 6 lemmas (5 #180-specific + 1 single-graph
+  asymptotic) and the main theorem proved from `axiom`s.
+- **Hardening phase** (Tasks 1–10): enforced `#guard_msgs` axiom
+  guards, the mathlib bridge, the Hunter instantiation for all
+  `a, b ≥ 2`, the forest linear upper bound, the structural variant of
+  the main theorem, and a hygiene pass.
 - **0 `sorry`**, **0 `admit`**, **0 project-specific axioms** in the
   final state.
-- **~8 hours wall-clock** total agent time across all milestones,
-  including a Phase 1 mathlib feasibility analysis that triggered an
-  axiom-statement weakening (see *Strategy* below).
+- **~8 hours wall-clock** total agent time for the initial
+  formalization, including a Phase 1 mathlib feasibility analysis that
+  triggered an axiom-statement weakening (see *Strategy* below).
 - **Single-milestone runs**: longest 4 hours (matching vertex-cover
   lemma), shortest 11 minutes.
 - **Cost**: Claude Pro weekly allowance ~50% used; OpenAI Codex weekly
@@ -91,7 +119,11 @@ project-specific axioms.
 This audit is enforced by a `#guard_msgs` wrapper in
 [`Erdos180/Formalization.lean`](Erdos180/Formalization.lean). A
 `lake build` fails if the printed axiom set changes from
-`[propext, Classical.choice, Quot.sound]`.
+`[propext, Classical.choice, Quot.sound]`. The same guard pattern
+protects every public theorem in `Bridge`, `Hunter`, `HunterGeneral`,
+`Forest`, and `Families/StructuralTheorem`. Continuous integration
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs the full
+build — and therefore all guards — on every push.
 
 ## Strategy
 
@@ -147,7 +179,9 @@ formalization file into 14 modules, with no logic changes.
 Erdos180/
 ├── README.md                                       — this file
 ├── dichotomy.tex                                   — source statement, also on forum
-├── phase1-report.md                                — mathlib gap survey
+├── phase1-report.md                                — mathlib gap survey (probabilistic)
+├── phase2-forest-report.md                         — mathlib survey for forest upper bound
+├── .github/workflows/ci.yml                        — CI: lake build + axiom guards
 ├── Erdos180.lean                                   — top-level module
 ├── Erdos180/
 │   ├── Basic.lean                                  — namespace marker
@@ -155,17 +189,22 @@ Erdos180/
 │   ├── Asymptotic.lean                             — Θ, Ω, O wrappers + helpers
 │   ├── Finite.lean                                 — Fintype instances
 │   ├── Extremal.lean                               — extremal number definitions
+│   ├── Bridge.lean                                 — equivalence with mathlib definitions
 │   ├── ReducedEdge.lean                            — embedding helpers
 │   ├── Matching.lean                               — matching graph + matching theory
 │   ├── MatchingEdgeFinset.lean                     — matching edge counting
 │   ├── SingleForbidden.lean                        — singleForbiddenGraphLemma (proved)
+│   ├── Forest.lean                                 — forest ⇒ linear extremal number
+│   ├── Hunter.lean                                 — Hunter example, a = b = 2
+│   ├── HunterGeneral.lean                          — Hunter family, all a, b ≥ 2
 │   ├── Families/
 │   │   ├── Bounds.lean                             — family Theta bounds
 │   │   ├── Matching.lean                           — matching lower-bound construction
 │   │   ├── OneEdge.lean                            — one-edge construction
 │   │   ├── Star.lean                               — star lower-bound construction
 │   │   ├── Upper.lean                              — Case (i) upper bound
-│   │   └── Theorem.lean                            — familiesTheorem
+│   │   ├── Theorem.lean                            — familiesTheorem
+│   │   └── StructuralTheorem.lean                  — familiesTheoremStructural
 │   └── Formalization.lean                          — aggregator + axiom check
 ├── lakefile.toml
 ├── lean-toolchain
@@ -187,6 +226,17 @@ Erdos180/
 - **Case (ii) constructions** ([`Erdos180/Families/Star.lean`](Erdos180/Families/Star.lean),
   [`Erdos180/Families/Matching.lean`](Erdos180/Families/Matching.lean))
   — `K_{1,n-1}` and `⌊n/2⌋`-matching as `F`-free witnesses.
+- **`familiesTheoremStructural`** ([`Erdos180/Families/StructuralTheorem.lean`](Erdos180/Families/StructuralTheorem.lean))
+  — the dichotomy under purely structural hypotheses (reduced members
+  are forests with ≥ 2 edges), with the case (ii) upper bound supplied
+  by the forest module instead of an asymptotic assumption.
+- **Greedy forest embedding** ([`Erdos180/Forest.lean`](Erdos180/Forest.lean))
+  — an acyclic graph on `k` vertices embeds into any host with minimum
+  degree ≥ `k`, by leaf-by-leaf induction; the engine behind the
+  `ex(n; H) = O(n)` bound for forest-reducing `H`.
+- **Hunter instantiation** ([`Erdos180/HunterGeneral.lean`](Erdos180/HunterGeneral.lean))
+  — the dichotomy's case (i) is non-vacuous: the family
+  `{K_{1,a}, bK_2}` satisfies all hypotheses for every `a, b ≥ 2`.
 
 ## Status note
 
@@ -201,6 +251,11 @@ acting as a coding agent. The work was orchestrated across three roles:
   planning): **Claude Opus 4.7** (claude.ai), including extended-thinking
   / adaptive-thinking sessions
 - **Lean code generation**: **GPT-5.5 xhigh**
+- **Hardening phase** (Tasks 1–10: axiom guards, mathlib bridge, Hunter
+  generalization, forest upper bound, structural theorem, cleanup):
+  prompts, milestone decomposition, and statement-level review by
+  **Claude Fable 5** (Claude Code); Lean code generation by
+  **GPT-5.5 xhigh**
 
 I am a computational biology researcher with software engineering
 experience but no formal mathematics training. My role was driving the
@@ -223,11 +278,13 @@ using mathlib's `SimpleGraph.Copy`, `SimpleGraph.IsContained`,
 `SimpleGraph.Free`, `SimpleGraph.extremalNumber`. The custom definitions
 are equivalent in content but use `Fin n`-indexed graphs and direct
 embedding records, which let the lemma statements track the LaTeX
-argument's structure closely. Migration to mathlib's API is feasible
-but requires substantial refactoring; whether it is worth doing here
-depends on whether this code aims to integrate with mathlib (in which
-case yes) or remain standalone (in which case the parallel definitions
-are clearer for the specific argument).
+argument's structure closely. *Update*: the equivalences are now
+**proved**, not just claimed —
+[`Erdos180/Bridge.lean`](Erdos180/Bridge.lean) shows
+`EmbedsAsSubgraph H G ↔ H ⊑ G` and
+`extremalNumber H n = SimpleGraph.extremalNumber n H`. Full migration
+of the development to mathlib vocabulary (a prerequisite for
+upstreaming) remains future work.
 
 **2. Off-by-one in Case (i) constants.** The LaTeX argument gives
 `e(G) ≤ 2(a-1)(b-1)`. The Lean formalization establishes a slightly
@@ -240,14 +297,20 @@ of the specific constants.
 **3. Statement weakening.** The axiom `singleForbiddenGraphLemma` was
 weakened from the classical biconditional to a single direction with one
 conjunct, matching its actual usage in `familiesTheorem`. The repository
-proves only the weakened statement. The full biconditional remains
-unproven here (and per the Phase 1 survey, requires mathlib infrastructure
-not currently present).
+proves only the weakened statement. *Update*: the upper-bound half of
+the forward direction — `H` reduces to a forest `⇒ ex(n; H) = O(n)` —
+is now formalized in [`Erdos180/Forest.lean`](Erdos180/Forest.lean) and
+consumed by `familiesTheoremStructural`. The remaining unproven piece
+of the biconditional is the converse (`H°` contains a cycle `⇒`
+super-linear extremal number), which per the Phase 1 survey requires
+probabilistic infrastructure not currently in mathlib.
 
-**4. Lint warnings.** A few mathlib linter warnings remain (`push_neg`
-deprecation, unused `[DecidableEq]` and `[Fintype V]` hypotheses).
-These are stylistic, not logical; they are flagged by mathlib's modern
-linters and are deliberately left for a future cleanup pass.
+**4. Lint warnings.** A few mathlib linter warnings remain, confined to
+three pre-hardening files — `ReducedEdge.lean` (unused `[DecidableEq]`),
+`SingleForbidden.lean` (`push_neg` deprecation), and
+`Families/Upper.lean` (unused `[Fintype V]`). These are stylistic, not
+logical. Files added or touched during the hardening phase build
+warning-free.
 
 **5. Single-author Lean style.** All Lean code came from one agent run
 (GPT-5.5 xhigh). The proof style is consistent within the codebase but
@@ -264,9 +327,11 @@ Erdős-formalization community, particularly useful feedback would be:
   intended meaning, especially around `atLeastTwoEdgesAfterDeletingIsolated`
   versus the LaTeX phrasing of "≥ 2 reduced edges".
 - Proofs that look like they reinvent existing mathlib API. The custom
-  `EmbedsAsSubgraph`, `extremalNumber`, etc. likely have mathlib
-  equivalents I should be using; pointers to specific replacements
-  appreciated.
+  `EmbedsAsSubgraph` and `extremalNumber` are now proved equivalent to
+  mathlib's `IsContained` and `SimpleGraph.extremalNumber`
+  ([`Erdos180/Bridge.lean`](Erdos180/Bridge.lean)); pointers on further
+  migration, or on upstreaming the forest bound and the family extremal
+  number to mathlib, are appreciated.
 - Whether the `singleForbiddenGraphLemma` weakening (single direction,
   single conjunct) is a faithful reduction of the underlying classical
   result. The `Used; not proved here` lemma in
