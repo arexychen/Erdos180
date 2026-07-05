@@ -9,6 +9,17 @@ namespace Erdos180
 
 universe u v w
 
+/-- The repository's `edgeCount` agrees with mathlib's finite edge finset count. -/
+theorem edgeCount_eq_edgeFinset_card
+    {V : Type u} [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] :
+    edgeCount G = G.edgeFinset.card := by
+  classical
+  rw [edgeCount, Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
+
+/-- info: 'Erdos180.edgeCount_eq_edgeFinset_card' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Erdos180.edgeCount_eq_edgeFinset_card
+
 /-- If every element of a set of natural numbers is at most `C`, then its
 supremum is at most `C`.  This version also handles the empty set. -/
 theorem nat_sSup_le_of_forall_le {s : Set ℕ} {C : ℕ}
@@ -32,8 +43,8 @@ theorem edgeCount_le_complete_bound {n : ℕ}
     edgeCount G ≤ n.choose 2 := by
   classical
   letI : DecidableRel G.Adj := Classical.decRel _
-  have hedge : edgeCount G = G.edgeFinset.card := by
-    rw [edgeCount, Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
+  have hedge : edgeCount G = G.edgeFinset.card :=
+    edgeCount_eq_edgeFinset_card G
   rw [hedge]
   simpa using (SimpleGraph.card_edgeFinset_le_card_choose_two (G := G))
 

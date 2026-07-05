@@ -20,22 +20,6 @@ def hunterFamily : Fin 2 → FiniteSimpleGraph
   | 0 => hunterStar
   | 1 => hunterMatching
 
-private theorem edgeCount_eq_edgeFinset_card
-    {V : Type u} [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] :
-    edgeCount G = G.edgeFinset.card := by
-  classical
-  rw [edgeCount, Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
-
-private theorem isOLinear_of_forall_le_mul
-    (f : ℕ → ℕ) (C : ℕ) (hC : ∀ n, f n ≤ C * n) :
-    IsOLinear f := by
-  unfold IsOLinear
-  refine IsBigO.of_bound (C : ℝ) (Filter.Eventually.of_forall ?_)
-  intro n
-  have hreal : (f n : ℝ) ≤ (C * n : ℕ) := by
-    exact_mod_cast hC n
-  simpa [Nat.cast_mul, mul_comm, mul_left_comm, mul_assoc] using hreal
-
 private theorem edgeCount_le_of_forall_degree_le_two
     {n : ℕ} (G : SimpleGraph (Fin n)) [DecidableRel G.Adj]
     (hdeg : ∀ v, G.degree v ≤ 2) :

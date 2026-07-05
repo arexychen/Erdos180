@@ -1,22 +1,14 @@
 import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
-import Erdos180.Core
+import Erdos180.Extremal
+
+open Filter
+open Asymptotics
 
 noncomputable section
 
 namespace Erdos180
 
-universe u
-
-/-- The repository's `edgeCount` agrees with mathlib's finite edge finset count. -/
-theorem edgeCount_eq_edgeFinset_card'
-    {α : Type u} [Fintype α] (G : SimpleGraph α) [DecidableRel G.Adj] :
-    edgeCount G = G.edgeFinset.card := by
-  classical
-  rw [edgeCount, Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
-
-/-- info: 'Erdos180.edgeCount_eq_edgeFinset_card'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms Erdos180.edgeCount_eq_edgeFinset_card'
+universe u v
 
 /-- Edge count after deleting a single vertex, stated in repository vocabulary. -/
 theorem edgeCount_induce_compl_singleton
@@ -28,13 +20,13 @@ theorem edgeCount_induce_compl_singleton
   calc
     edgeCount (G.induce ({v}ᶜ : Set α)) + G.degree v
         = (G.induce ({v}ᶜ : Set α)).edgeFinset.card + G.degree v := by
-          rw [edgeCount_eq_edgeFinset_card']
+          rw [edgeCount_eq_edgeFinset_card]
     _ = (G.deleteIncidenceSet v).edgeFinset.card + G.degree v := by
           rw [SimpleGraph.card_edgeFinset_induce_compl_singleton]
     _ = (G.edgeFinset.card - G.degree v) + G.degree v := by
           rw [SimpleGraph.card_edgeFinset_deleteIncidenceSet]
     _ = G.edgeFinset.card := Nat.sub_add_cancel hdeg_le
-    _ = edgeCount G := (edgeCount_eq_edgeFinset_card' G).symm
+    _ = edgeCount G := (edgeCount_eq_edgeFinset_card G).symm
 
 /-- info: 'Erdos180.edgeCount_induce_compl_singleton' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
@@ -111,16 +103,10 @@ theorem exists_leaf_with_unique_neighbor_of_isAcyclic_of_edge
 #guard_msgs in
 #print axioms Erdos180.exists_leaf_with_unique_neighbor_of_isAcyclic_of_edge
 
-end Erdos180
-
-namespace Erdos180
-
-universe u v
-
 private theorem embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree_aux :
     ∀ n : ℕ, ∀ {α : Type u} {β : Type v} [Fintype α] [Fintype β],
       ∀ (F : SimpleGraph α) (G : SimpleGraph β),
-        [DecidableRel F.Adj] → [DecidableRel G.Adj] →
+        [DecidableRel G.Adj] →
         Fintype.card α = n →
         F.IsAcyclic →
         Fintype.card α ≤ Fintype.card β →
@@ -129,7 +115,7 @@ private theorem embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree_aux :
   intro n
   induction n using Nat.strong_induction_on with
   | h n ih =>
-      intro α β _ _ F G _ _ hα hF hcard hdeg
+      intro α β _ _ F G _ hα hF hcard hdeg
       classical
       by_cases hedge : F.edgeFinset.Nonempty
       · rcases exists_leaf_with_unique_neighbor_of_isAcyclic_of_edge F hF hedge with
@@ -234,7 +220,7 @@ private theorem embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree_aux :
 theorem embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree
     {α : Type u} {β : Type v} [Fintype α] [Fintype β]
     (F : SimpleGraph α) (G : SimpleGraph β)
-    [DecidableRel F.Adj] [DecidableRel G.Adj]
+    [DecidableRel G.Adj]
     (hF : F.IsAcyclic)
     (hcard : Fintype.card α ≤ Fintype.card β)
     (hdeg : Fintype.card α ≤ G.minDegree) :
@@ -245,15 +231,6 @@ theorem embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree
 /-- info: 'Erdos180.embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Erdos180.embedsAsSubgraph_of_isAcyclic_of_card_le_minDegree
-
-end Erdos180
-
-namespace Erdos180
-
-open Filter
-open Asymptotics
-
-universe u v
 
 private theorem isHFree_induce_of_isHFree
     {α : Type u} {β : Type v} {H : SimpleGraph α} {G : SimpleGraph β}
@@ -311,14 +288,14 @@ private theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic_aux
     {α : Type u} [Fintype α] (H : SimpleGraph α)
     (hforest : (deleteIsolated H).IsAcyclic) :
     ∀ n : ℕ, ∀ {β : Type v} [Fintype β],
-      ∀ (G : SimpleGraph β), [DecidableRel G.Adj] →
+      ∀ (G : SimpleGraph β),
         Fintype.card β = n →
         IsHFree H G →
         edgeCount G ≤ Fintype.card α * Fintype.card β := by
   intro n
   induction n using Nat.strong_induction_on with
   | h n ih =>
-      intro β _ G _ hβ_card hfree
+      intro β _ G hβ_card hfree
       classical
       by_cases hβ_nonempty : Nonempty β
       · letI : Nonempty β := hβ_nonempty
@@ -375,6 +352,7 @@ private theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic_aux
           _ ≤ Fintype.card α * Fintype.card β := by
             simp
 
+set_option linter.unusedFintypeInType false in
 theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
     {α : Type u} [Fintype α] (H : SimpleGraph α)
     (hforest : (deleteIsolated H).IsAcyclic) :
@@ -393,23 +371,7 @@ theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
 #guard_msgs in
 #print axioms Erdos180.edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
 
-private theorem nat_sSup_le_of_forall_le' {s : Set ℕ} {C : ℕ}
-    (hC : ∀ m ∈ s, m ≤ C) :
-    sSup s ≤ C := by
-  classical
-  rw [Nat.sSup_def ⟨C, hC⟩]
-  exact Nat.find_min' ⟨C, hC⟩ hC
-
-private theorem isOLinear_of_forall_le_mul
-    (f : ℕ → ℕ) (C : ℕ) (hC : ∀ n, f n ≤ C * n) :
-    IsOLinear f := by
-  unfold IsOLinear
-  refine IsBigO.of_bound (C : ℝ) (Filter.Eventually.of_forall ?_)
-  intro n
-  have hreal : (f n : ℝ) ≤ (C * n : ℕ) := by
-    exact_mod_cast hC n
-  simpa [Nat.cast_mul, mul_comm, mul_left_comm, mul_assoc] using hreal
-
+set_option linter.unusedFintypeInType false in
 theorem isOLinear_extremalNumber_of_deleteIsolated_isAcyclic
     {α : Type u} [Fintype α] (H : SimpleGraph α)
     (hforest : (deleteIsolated H).IsAcyclic) :
@@ -420,7 +382,7 @@ theorem isOLinear_extremalNumber_of_deleteIsolated_isAcyclic
   refine isOLinear_of_forall_le_mul (fun n => extremalNumber H n) C ?_
   intro n
   unfold extremalNumber
-  refine nat_sSup_le_of_forall_le' ?_
+  refine nat_sSup_le_of_forall_le ?_
   intro m hm
   rcases hm with ⟨G, hfree, rfl⟩
   letI : DecidableRel G.Adj := Classical.decRel _

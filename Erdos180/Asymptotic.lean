@@ -20,6 +20,21 @@ theorem isOConstant_of_forall_le (f : ℕ → ℕ) (C : ℕ)
     exact_mod_cast hC n
   simpa using hreal
 
+/-- A pointwise linear natural upper bound gives `O(n)`. -/
+theorem isOLinear_of_forall_le_mul
+    (f : ℕ → ℕ) (C : ℕ) (hC : ∀ n, f n ≤ C * n) :
+    IsOLinear f := by
+  unfold IsOLinear
+  refine IsBigO.of_bound (C : ℝ) (Filter.Eventually.of_forall ?_)
+  intro n
+  have hreal : (f n : ℝ) ≤ (C * n : ℕ) := by
+    exact_mod_cast hC n
+  simpa [Nat.cast_mul, mul_comm, mul_left_comm, mul_assoc] using hreal
+
+/-- info: 'Erdos180.isOLinear_of_forall_le_mul' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Erdos180.isOLinear_of_forall_le_mul
+
 /-- The natural-valued identity function is not `O(1)`. -/
 lemma not_natCast_isBigO_one :
     ¬ ((fun n : ℕ => (n : ℝ)) =O[Filter.atTop] (fun _ : ℕ => (1 : ℝ))) := by

@@ -9,12 +9,6 @@ namespace Erdos180
 
 universe u v
 
-private theorem edgeCount_eq_edgeFinset_card
-    {V : Type u} [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] :
-    edgeCount G = G.edgeFinset.card := by
-  classical
-  rw [edgeCount, Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
-
 theorem embedsAsSubgraph_iff_isContained
     {α β} (H : SimpleGraph α) (G : SimpleGraph β) :
     EmbedsAsSubgraph H G ↔ H ⊑ G := by
@@ -32,9 +26,8 @@ theorem embedsAsSubgraph_iff_isContained
 #guard_msgs in
 #print axioms Erdos180.embedsAsSubgraph_iff_isContained
 
-set_option linter.unusedFintypeInType false in
 theorem extremalNumber_eq_mathlib
-    {α} [Fintype α] (H : SimpleGraph α) (n : ℕ) :
+    {α} (H : SimpleGraph α) (n : ℕ) :
     extremalNumber H n = SimpleGraph.extremalNumber n H := by
   classical
   apply le_antisymm
