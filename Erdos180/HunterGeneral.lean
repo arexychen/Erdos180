@@ -1,4 +1,4 @@
-import Erdos180.Families.Theorem
+import Erdos180.Families.StructuralTheorem
 
 open Filter
 open Asymptotics
@@ -475,5 +475,112 @@ theorem hunterFamilyGen_theta_one
 /-- info: 'Erdos180.hunterFamilyGen_theta_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms Erdos180.hunterFamilyGen_theta_one
+
+private theorem degree_le_one_of_adj_unique
+    {V : Type u} (G : SimpleGraph V) (v : V)
+    [Fintype (G.neighborSet v)]
+    (huniq : ∀ ⦃x y : V⦄, G.Adj v x → G.Adj v y → x = y) :
+    G.degree v ≤ 1 := by
+  rw [← SimpleGraph.card_neighborSet_eq_degree]
+  exact Fintype.card_le_one_iff_subsingleton.mpr
+    ⟨fun x y => Subtype.ext (huniq x.property y.property)⟩
+
+private theorem starGraph_isAcyclic
+    {V : Type u} [Finite V] (c : V) :
+    (starGraph c).IsAcyclic := by
+  classical
+  letI : Fintype V := Fintype.ofFinite V
+  rw [SimpleGraph.isAcyclic_iff_pairwise_not_isEdgeReachable_two]
+  intro u v huv hreach
+  by_cases hu : u = c
+  · have hv : v ≠ c := by
+      intro hv
+      exact huv (hu.trans hv.symm)
+    have hdeg_lower : 2 ≤ (starGraph c).degree v :=
+      hreach.symm.le_degree huv.symm
+    have hdeg_upper : (starGraph c).degree v ≤ 1 := by
+      exact degree_le_one_of_adj_unique (starGraph c) v (by
+        intro x y hvx hvy
+        have hx : x = c := by
+          rcases hvx with hx | hx
+          · exact False.elim (hv hx.1)
+          · exact hx.1
+        have hy : y = c := by
+          rcases hvy with hy | hy
+          · exact False.elim (hv hy.1)
+          · exact hy.1
+        exact hx.trans hy.symm)
+    omega
+  · have hdeg_lower : 2 ≤ (starGraph c).degree u :=
+      hreach.le_degree huv
+    have hdeg_upper : (starGraph c).degree u ≤ 1 := by
+      exact degree_le_one_of_adj_unique (starGraph c) u (by
+        intro x y hux huy
+        have hx : x = c := by
+          rcases hux with hx | hx
+          · exact False.elim (hu hx.1)
+          · exact hx.1
+        have hy : y = c := by
+          rcases huy with hy | hy
+          · exact False.elim (hu hy.1)
+          · exact hy.1
+        exact hx.trans hy.symm)
+    omega
+
+private theorem isAcyclic_of_isStar
+    {V : Type u} [Finite V] (G : SimpleGraph V)
+    (hstar : IsStar G) :
+    G.IsAcyclic := by
+  rcases hstar with ⟨c, rfl⟩
+  exact starGraph_isAcyclic c
+
+private theorem isAcyclic_of_isMatchingGraph
+    {V : Type u} [Finite V] (G : SimpleGraph V)
+    (hmatch : IsMatchingGraph G) :
+    G.IsAcyclic := by
+  classical
+  letI : Fintype V := Fintype.ofFinite V
+  rw [SimpleGraph.isAcyclic_iff_pairwise_not_isEdgeReachable_two]
+  intro u v huv hreach
+  have hdeg_lower : 2 ≤ G.degree u := hreach.le_degree huv
+  have hdeg_upper : G.degree u ≤ 1 := by
+    exact degree_le_one_of_adj_unique G u (by
+      intro x y hux huy
+      exact hmatch hux huy)
+  omega
+
+theorem hunterFamilyGen_reduced_isAcyclic
+    (a b : ℕ) (ha : 2 ≤ a) (hb : 2 ≤ b) :
+    ∀ i, ((hunterFamilyGen a b i).reduced).IsAcyclic := by
+  have _ := hb
+  intro i
+  fin_cases i
+  · exact isAcyclic_of_isStar (hunterStarGen a).reduced
+      (hunterStarGen_reduced_isStar a (by omega))
+  · exact isAcyclic_of_isMatchingGraph (hunterMatchingGen b).reduced
+      (hunterMatchingGen_reduced_isMatching b)
+
+/-- info: 'Erdos180.hunterFamilyGen_reduced_isAcyclic' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Erdos180.hunterFamilyGen_reduced_isAcyclic
+
+theorem hunterFamilyGen_theta_one_structural
+    (a b : ℕ) (ha : 2 ≤ a) (hb : 2 ≤ b) :
+    IsThetaConstant (fun n => extremalFamily (hunterFamilyGen a b) n) := by
+  have htwo :
+      ∀ i, (hunterFamilyGen a b i).atLeastTwoEdgesAfterDeletingIsolated := by
+    intro i
+    fin_cases i
+    · exact hunterStarGen_reduced_atLeastTwo a ha
+    · exact hunterMatchingGen_reduced_atLeastTwo b hb
+  rcases familiesTheoremStructural (hunterFamilyGen a b)
+      (hunterFamilyGen_reduced_isAcyclic a b ha hb) htwo with
+    hconstant | hlinear
+  · exact hconstant.2
+  · exact False.elim (hlinear.1 (hunterFamilyGen_pair a b ha hb))
+
+/-- info: 'Erdos180.hunterFamilyGen_theta_one_structural' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms Erdos180.hunterFamilyGen_theta_one_structural
 
 end Erdos180

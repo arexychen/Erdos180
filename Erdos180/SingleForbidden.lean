@@ -10,8 +10,11 @@ namespace Erdos180
 universe u v w
 
 /--
-Single-forbidden-graph lemma: `ex(n; H) = Θ(n)` iff the non-isolated part of
-`H` is a forest with at least two edges.
+Single-forbidden-graph lemma used by the dichotomy: if `ex(n; H) = Θ(n)`,
+then the non-isolated part of `H` has at least two edges.
+
+This is the weakened single direction of the classical characterization used
+in the README "Strategy".
 -/
 theorem singleForbiddenGraphLemma (H : FiniteSimpleGraph.{u}) :
     IsThetaLinear (fun n : ℕ => H.extremal n) →
