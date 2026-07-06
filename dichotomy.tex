@@ -72,14 +72,26 @@ matching constructions. The converse (\(H^\circ\) contains a cycle
 \(\Rightarrow\) \(\ex(n;H)\) is super-linear) follows from
 Erd\H{o}s's high-girth/high-chromatic-number probabilistic construction.
 
-In the Lean formalization, only the implication
+In the Lean formalization, the dispatch in Theorem~\ref{thm:main} below
+consumes only the implication
 \[
-\ex(n;H)=\Theta(n) \;\Longrightarrow\; H^\circ \text{ has at least two edges}
+\ex(n;H)=\Theta(n) \;\Longrightarrow\; H^\circ \text{ has at least two edges},
 \]
-is actually used by the dispatch in Theorem~\ref{thm:main} below; the
-other direction and the forest conclusion are not consumed. The
-formalization therefore proves a weakened version sufficient for the
-dispatch.
+and the formalization proves a weakened version sufficient for it.
+Separately, the upper-bound half of the forward direction,
+\[
+H^\circ \text{ a forest} \;\Longrightarrow\; \ex(n;H)=O(n),
+\]
+is now also formalized (module \texttt{Forest.lean}), via a greedy
+leaf-by-leaf embedding of a $k$-vertex forest into any host of minimum
+degree at least $k$; it supplies the Case~(ii) upper bound of the
+structural variant described below. The remaining unformalized piece of
+the classical biconditional is the converse (cycle case), whose known
+proofs need probabilistic tools not found in the surveyed
+\texttt{mathlib4} API.
+% UPGRADE (after single-graph Omega(n) milestone): add that the full
+% forward direction (forest with >= 2 edges => Theta(n)) is formalized,
+% i.e. the Omega(n) half via star/matching host constructions.
 
 \section*{3. The dichotomy}
 
@@ -147,6 +159,10 @@ slightly weaker bound, \(O(|V(F_{\mathrm{star}})|\cdot |V(F_{\mathrm{matching}})
 because of how isolated vertices in family members were handled in the
 formalization; both bounds give \(\Theta(1)\), but the explicit constants
 differ.
+% UPGRADE (after sharp-constant milestone): replace the two sentences
+% above with: "The Lean formalization now also establishes the explicit
+% bound e(G) <= 2(a-1)(b-1) (module SharpConstant.lean), matching the
+% argument above."
 
 \paragraph{What the formalization establishes.} The Lean theorem
 \verb|familiesTheorem| is exactly the statement of Theorem~\ref{thm:main}
@@ -154,15 +170,32 @@ above, formalized in Lean~4 against \texttt{Mathlib4}. After replacement
 of all project-specific axioms,
 \verb|#print axioms familiesTheorem| reports only Lean's foundational
 axioms (\texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}).
-The formalization was carried out in approximately eight hours of
-agent wall-clock time.
+The initial formalization was carried out in approximately eight hours
+of agent wall-clock time.
+
+A subsequent hardening phase added: a structural variant
+\verb|familiesTheoremStructural| whose hypotheses are conditions on the
+finite members themselves (each $H^\circ$ is a forest with at least two
+edges) rather than asymptotic statements; the forest upper bound of
+\S2; a verified instantiation of Hunter's family $\{K_{1,a}, bK_2\}$
+for all $a,b\ge 2$ against both versions of the theorem; machine-checked
+equivalences between the repository's containment and extremal-number
+definitions and \texttt{mathlib}'s (\verb|SimpleGraph.IsContained|,
+\verb|SimpleGraph.extremalNumber|); and enforced axiom audits
+(\verb|#guard_msgs| guards on the main theorems and all
+hardening-phase additions), so that the build itself fails if any
+guarded axiom set drifts. Continuous integration runs the build on
+every push.
 
 \paragraph{Acknowledgments.} The folklore counterexample is due to Zach
 Hunter, recorded on the Erd\H{o}s Problems forum thread for \#180. The
 problem itself is due to Erd\H{o}s and Simonovits. The accompanying Lean
 formalization was carried out by AI agents (Claude Sonnet~4.6 for initial
 problem identification, Claude Opus~4.7 for prompt design and
-verification, GPT-5.5 xhigh for Lean code generation).
+verification, GPT-5.5 xhigh for Lean code generation; the hardening
+phase used Claude Fable~5 for milestone decomposition and
+statement-level review, with GPT-5.5 xhigh again generating the Lean
+code).
 
 \paragraph{Document provenance.} This note was drafted by Claude
 Opus~4.7.
