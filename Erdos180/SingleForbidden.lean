@@ -32,9 +32,9 @@ theorem singleForbiddenGraphLemma (H : FiniteSimpleGraph.{u}) :
     · by_cases hpos : 0 < edgeCount G
       · exact False.elim <| hfree
           (embeds_of_reduced_edgeCount_le_one H G hred hcard hpos)
-      · push_neg at hpos
+      · push Not at hpos
         omega
-    · push_neg at hcard
+    · push Not at hcard
       calc
         edgeCount G ≤ m.choose 2 := edgeCount_le_complete_bound G
         _ ≤ (Fintype.card H.V).choose 2 :=

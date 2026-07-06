@@ -305,12 +305,14 @@ of the biconditional is the converse (`H°` contains a cycle `⇒`
 super-linear extremal number), which per the Phase 1 survey requires
 probabilistic infrastructure not currently in mathlib.
 
-**4. Lint warnings.** A few mathlib linter warnings remain, confined to
-three pre-hardening files — `ReducedEdge.lean` (unused `[DecidableEq]`),
-`SingleForbidden.lean` (`push_neg` deprecation), and
-`Families/Upper.lean` (unused `[Fintype V]`). These are stylistic, not
-logical. Files added or touched during the hardening phase build
-warning-free.
+**4. Linter overrides.** The build is warning-free. One deliberate,
+documented linter override remains:
+`matching_verts_toFinset_card_eq_two_mul_edgeFinset_card`
+([`Erdos180/Families/Upper.lean`](Erdos180/Families/Upper.lean))
+carries a `[Fintype V]` hypothesis that mathlib's
+`unusedFintypeInType` linter flags as unused in the statement, but the
+proof requires it for instance synthesis; the linter is silenced
+locally with an explanatory comment.
 
 **5. Single-author Lean style.** All Lean code came from one agent run
 (GPT-5.5 xhigh). The proof style is consistent within the codebase but

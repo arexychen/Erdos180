@@ -146,7 +146,11 @@ theorem exists_maximalMatching_edgeCover
     hedge_le_M.1 (by simp)
   exact hnot.1 hxM
 
-/-- A matching saturates exactly twice as many vertices as it has edges. -/
+set_option linter.unusedFintypeInType false in
+/-- A matching saturates exactly twice as many vertices as it has edges.
+
+`[Fintype V]` is unused in the statement but required by the proof
+(instance synthesis for `Subgraph.finiteAt`), hence the linter override. -/
 theorem matching_verts_toFinset_card_eq_two_mul_edgeFinset_card
     {V : Type u} [Fintype V] {G : SimpleGraph V}
     (M : G.Subgraph) [DecidableRel M.Adj] [Fintype M.verts]

@@ -26,7 +26,7 @@ lemma extremalNumber_le_of_forall_edgeCount_le
 /-- Given enough target vertices, an embedding can be chosen to send two
 specified distinct vertices to two specified distinct targets. -/
 lemma exists_embedding_pinning_two
-    {α : Type u} [Fintype α] [DecidableEq α]
+    {α : Type u} [Fintype α]
     {n : ℕ} {x y : α} (hxy : x ≠ y)
     {a b : Fin n} (hab : a ≠ b)
     (hcard : Fintype.card α ≤ n) :
