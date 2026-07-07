@@ -154,15 +154,14 @@ regime exhibits the star/matching obstruction (Hunter's case) as the
 unique pattern producing constant family extremal number.
 
 \paragraph{Constants in Case~(i).} The argument above gives the explicit
-bound \(e(G)\le 2(a-1)(b-1)\). The Lean formalization establishes a
-slightly weaker bound, \(O(|V(F_{\mathrm{star}})|\cdot |V(F_{\mathrm{matching}})|)\),
-because of how isolated vertices in family members were handled in the
-formalization; both bounds give \(\Theta(1)\), but the explicit constants
-differ.
-% UPGRADE (after sharp-constant milestone): replace the two sentences
-% above with: "The Lean formalization now also establishes the explicit
-% bound e(G) <= 2(a-1)(b-1) (module SharpConstant.lean), matching the
-% argument above."
+bound \(e(G)\le 2(a-1)(b-1)\). The Lean formalization now establishes
+exactly this bound for the canonical obstruction pair
+(\verb|edgeCount_le_of_star_free_of_matching_free|, module
+\texttt{SharpConstant.lean}): any host graph containing neither
+\(K_{1,a}\) nor \(bK_2\) has at most \(2(a-1)(b-1)\) edges. The
+general family theorem retains a weaker internal constant,
+\(O(|V(F_{\mathrm{star}})|\cdot |V(F_{\mathrm{matching}})|)\), which
+suffices for the \(\Theta(1)\) conclusion.
 
 \paragraph{What the formalization establishes.} The Lean theorem
 \verb|familiesTheorem| is exactly the statement of Theorem~\ref{thm:main}

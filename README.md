@@ -195,6 +195,7 @@ Erdos180/
 │   ├── MatchingEdgeFinset.lean                     — matching edge counting
 │   ├── SingleForbidden.lean                        — singleForbiddenGraphLemma (proved)
 │   ├── Forest.lean                                 — forest ⇒ linear extremal number
+│   ├── SharpConstant.lean                          — sharp Case (i) bound 2(a−1)(b−1)
 │   ├── Hunter.lean                                 — Hunter example, a = b = 2
 │   ├── HunterGeneral.lean                          — Hunter family, all a, b ≥ 2
 │   ├── Families/
@@ -286,13 +287,15 @@ argument's structure closely. *Update*: the equivalences are now
 of the development to mathlib vocabulary (a prerequisite for
 upstreaming) remains future work.
 
-**2. Off-by-one in Case (i) constants.** The LaTeX argument gives
-`e(G) ≤ 2(a-1)(b-1)`. The Lean formalization establishes a slightly
-weaker bound, `O(|V(F_star)| · |V(F_matching)|)`, because of how isolated
-vertices in family members were handled in the formalization. Both
-bounds give `Θ(1)`, but explicit constants differ. This is a faithful
-formalization of the asymptotic statement, not a faithful formalization
-of the specific constants.
+**2. Case (i) constants.** The LaTeX argument gives
+`e(G) ≤ 2(a-1)(b-1)`, and this exact bound is now formalized for the
+canonical obstruction pair: a host containing neither `K_{1,a}` nor
+`bK_2` has at most `2(a-1)(b-1)` edges
+(`edgeCount_le_of_star_free_of_matching_free` in
+[`Erdos180/SharpConstant.lean`](Erdos180/SharpConstant.lean)). The
+general family theorem retains a weaker internal constant,
+`O(|V(F_star)| · |V(F_matching)|)`, arising from how isolated vertices
+in family members are handled; it suffices for the `Θ(1)` conclusion.
 
 **3. Statement weakening.** The axiom `singleForbiddenGraphLemma` was
 weakened from the classical biconditional to a single direction with one
@@ -339,9 +342,10 @@ Erdős-formalization community, particularly useful feedback would be:
   result. The `Used; not proved here` lemma in
   [`dichotomy.tex`](dichotomy.tex) §2 records the full biconditional;
   the formalization only uses one direction.
-- Off-by-one weakening in Case (i): is the weaker form
-  `O(|V(F_star)| · |V(F_matching)|)` acceptable as the formalized
-  statement, or should the explicit `2(a-1)(b-1)` bound be recovered?
+- Case (i) constants: the explicit `2(a-1)(b-1)` bound is formalized
+  for the canonical pair (`SharpConstant.lean`); is it worth threading
+  the sharp constant through the general family theorem as well, or is
+  the weaker internal constant acceptable there?
 - Mathlib gap analysis: is the [`phase1-report.md`](phase1-report.md)
   inventory of mathlib's coverage of probabilistic graph construction
   (high-girth existence, random graph short-cycle expectations,
