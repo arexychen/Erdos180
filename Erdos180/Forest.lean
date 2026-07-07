@@ -1,5 +1,6 @@
 import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
 import Erdos180.Extremal
+import Erdos180.Families.Matching
 
 open Filter
 open Asymptotics
@@ -352,6 +353,8 @@ private theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic_aux
           _ ≤ Fintype.card α * Fintype.card β := by
             simp
 
+-- `[Fintype α]` is unused in the statement but required by the proof
+-- (the witness constant is `Fintype.card α`), hence the linter override.
 set_option linter.unusedFintypeInType false in
 theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
     {α : Type u} [Fintype α] (H : SimpleGraph α)
@@ -371,6 +374,8 @@ theorem edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
 #guard_msgs in
 #print axioms Erdos180.edgeCount_le_of_isHFree_of_deleteIsolated_isAcyclic
 
+-- `[Fintype α]` is unused in the statement but required by the proof
+-- (it applies the guarded bound above), hence the linter override.
 set_option linter.unusedFintypeInType false in
 theorem isOLinear_extremalNumber_of_deleteIsolated_isAcyclic
     {α : Type u} [Fintype α] (H : SimpleGraph α)
@@ -393,5 +398,117 @@ theorem isOLinear_extremalNumber_of_deleteIsolated_isAcyclic
  Quot.sound] -/
 #guard_msgs in
 #print axioms Erdos180.isOLinear_extremalNumber_of_deleteIsolated_isAcyclic
+
+private theorem edgeCount_starGraph_eq_degree_center
+    {α : Type u} [Finite α] (c : α)
+    [Fintype ((starGraph c).neighborSet c)] :
+    edgeCount (starGraph c) = (starGraph c).degree c := by
+  classical
+  letI : Fintype α := Fintype.ofFinite α
+  let G : SimpleGraph α := starGraph c
+  have hinc : G.edgeFinset = G.incidenceFinset c := by
+    ext e
+    induction e using Sym2.inductionOn with
+    | _ x y =>
+        simp only [G, SimpleGraph.mem_edgeFinset, SimpleGraph.mem_incidenceFinset,
+          SimpleGraph.mk'_mem_incidenceSet_iff, SimpleGraph.mem_edgeSet, starGraph]
+        constructor
+        · intro hxy
+          refine ⟨hxy, ?_⟩
+          rcases hxy with hxy | hxy
+          · exact Or.inl hxy.1.symm
+          · exact Or.inr hxy.1.symm
+        · intro hxy
+          exact hxy.1
+  calc
+    edgeCount (starGraph c) = G.edgeFinset.card := by
+      rw [edgeCount_eq_edgeFinset_card]
+    _ = (G.incidenceFinset c).card := by rw [hinc]
+    _ = G.degree c := SimpleGraph.card_incidenceFinset_eq_degree G c
+
+private theorem degree_le_one_of_matchingGraph
+    {α : Type u} (G : SimpleGraph α) (v : α)
+    [Fintype (G.neighborSet v)]
+    (hmatch : IsMatchingGraph G) :
+    G.degree v ≤ 1 := by
+  rw [← SimpleGraph.card_neighborSet_eq_degree]
+  exact Fintype.card_le_one_iff_subsingleton.mpr
+    ⟨fun x y => Subtype.ext (hmatch x.property y.property)⟩
+
+private theorem not_isMatchingGraph_of_isStar_of_two_edges
+    {α : Type u} [Finite α] (G : SimpleGraph α)
+    (hstar : IsStar G) (htwo : 2 ≤ edgeCount G) :
+    ¬ IsMatchingGraph G := by
+  classical
+  letI : Fintype α := Fintype.ofFinite α
+  intro hmatch
+  rcases hstar with ⟨c, rfl⟩
+  letI : Fintype ((starGraph c).neighborSet c) :=
+    Fintype.ofFinite ((starGraph c).neighborSet c)
+  have hcount :
+      edgeCount (starGraph c) = (starGraph c).degree c :=
+    edgeCount_starGraph_eq_degree_center c
+  have hdeg : (starGraph c).degree c ≤ 1 :=
+    degree_le_one_of_matchingGraph (starGraph c) c hmatch
+  omega
+
+private theorem extremal_eventually_pred_le_of_not_star
+    (H : FiniteSimpleGraph.{u})
+    (htwo : H.atLeastTwoEdgesAfterDeletingIsolated)
+    (hNoStar : ¬ H.starAfterDeletingIsolated) :
+    ∀ᶠ n in atTop, n - 1 ≤ H.extremal n := by
+  let F : Unit → FiniteSimpleGraph.{u} := fun _ => H
+  have hFam :
+      ∀ᶠ n in atTop, n - 1 ≤ extremalFamily F n :=
+    starConstruction_extremalFamily_eventually_pred_le
+      F (by intro _; exact htwo) (by intro _; exact hNoStar)
+  exact hFam.mono (fun n hn => by
+    have hle : extremalFamily F n ≤ H.extremal n := by
+      simpa [F] using extremalFamily_le_extremal F () n
+    exact hn.trans hle)
+
+private theorem extremal_eventually_half_le_of_star
+    (H : FiniteSimpleGraph.{u})
+    (hstar : H.starAfterDeletingIsolated)
+    (htwo : H.atLeastTwoEdgesAfterDeletingIsolated) :
+    ∀ᶠ n in atTop, n / 2 ≤ H.extremal n := by
+  classical
+  let F : Unit → FiniteSimpleGraph.{u} := fun _ => H
+  letI : Fintype H.graph.support := Fintype.ofFinite H.graph.support
+  letI : DecidableRel H.reduced.Adj := Classical.decRel _
+  have hNoMatching : ∀ _ : Unit, ¬ (F ()).matchingAfterDeletingIsolated := by
+    intro _
+    exact not_isMatchingGraph_of_isStar_of_two_edges H.reduced hstar htwo
+  have hFam :
+      ∀ᶠ n in atTop, n / 2 ≤ extremalFamily F n :=
+    matchingConstruction_extremalFamily_eventually_half_le
+      F (by intro _; exact htwo) hNoMatching
+  exact hFam.mono (fun n hn => by
+    have hle : extremalFamily F n ≤ H.extremal n := by
+      simpa [F] using extremalFamily_le_extremal F () n
+    exact hn.trans hle)
+
+theorem isThetaLinear_extremal_of_reduced_isAcyclic_of_atLeastTwo
+    (H : FiniteSimpleGraph.{u})
+    (hforest : H.reduced.IsAcyclic)
+    (htwo : H.atLeastTwoEdgesAfterDeletingIsolated) :
+    IsThetaLinear (fun n => H.extremal n) := by
+  refine isThetaLinear_of_isOLinear_of_isOmegaLinear
+    (fun n => H.extremal n) ?_ ?_
+  · simpa [FiniteSimpleGraph.extremal, FiniteSimpleGraph.reduced] using
+      isOLinear_extremalNumber_of_deleteIsolated_isAcyclic H.graph hforest
+  · by_cases hstar : H.starAfterDeletingIsolated
+    · exact isOmegaLinear_of_eventually_half_le
+        (fun n => H.extremal n)
+        (extremal_eventually_half_le_of_star H hstar htwo)
+    · exact isOmegaLinear_of_eventually_pred_le
+        (fun n => H.extremal n)
+        (extremal_eventually_pred_le_of_not_star H htwo hstar)
+
+/-- info: 'Erdos180.isThetaLinear_extremal_of_reduced_isAcyclic_of_atLeastTwo' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound] -/
+#guard_msgs in
+#print axioms Erdos180.isThetaLinear_extremal_of_reduced_isAcyclic_of_atLeastTwo
 
 end Erdos180
