@@ -68,11 +68,14 @@ the repository's `EmbedsAsSubgraph` predicate is equivalent to mathlib's
 `extremalNumber` agrees with `SimpleGraph.extremalNumber`.
 
 The module [`Erdos180/Forest.lean`](Erdos180/Forest.lean) proves the
-upper-bound half of the forward direction of the folklore
-single-forbidden-graph characterization: if `H` reduces to a forest,
-then `ex(n; H) = O(n)`. The proof greedily embeds the forest leaf by
-leaf into any host of sufficiently large minimum degree, and bounds
-edge counts by host induction (delete a low-degree vertex, or embed).
+full forward direction of the folklore single-forbidden-graph
+characterization: if `H` reduces to a forest with ≥ 2 edges, then
+`ex(n; H) = Θ(n)`
+(`isThetaLinear_extremal_of_reduced_isAcyclic_of_atLeastTwo`). The
+`O(n)` half greedily embeds the forest leaf by leaf into any host of
+sufficiently large minimum degree, and bounds edge counts by host
+induction (delete a low-degree vertex, or embed); the `Ω(n)` half
+reuses the star/matching host constructions.
 Combined with the dichotomy machinery this yields
 `familiesTheoremStructural`
 ([`Erdos180/Families/StructuralTheorem.lean`](Erdos180/Families/StructuralTheorem.lean)),
@@ -300,13 +303,14 @@ in family members are handled; it suffices for the `Θ(1)` conclusion.
 **3. Statement weakening.** The axiom `singleForbiddenGraphLemma` was
 weakened from the classical biconditional to a single direction with one
 conjunct, matching its actual usage in `familiesTheorem`. The repository
-proves only the weakened statement. *Update*: the upper-bound half of
-the forward direction — `H` reduces to a forest `⇒ ex(n; H) = O(n)` —
-is now formalized in [`Erdos180/Forest.lean`](Erdos180/Forest.lean) and
-consumed by `familiesTheoremStructural`. The remaining unproven piece
-of the biconditional is the converse (`H°` contains a cycle `⇒`
-super-linear extremal number), which per the Phase 1 survey requires
-probabilistic infrastructure not currently in mathlib.
+proves only the weakened statement. *Update*: the full forward
+direction — `H` reduces to a forest with ≥ 2 edges `⇒ ex(n; H) = Θ(n)`
+— is now formalized in [`Erdos180/Forest.lean`](Erdos180/Forest.lean),
+and its `O(n)` half is consumed by `familiesTheoremStructural`. The
+only remaining unproven piece of the biconditional is the converse
+(`H°` contains a cycle `⇒` super-linear extremal number), which per
+the Phase 1 survey requires probabilistic infrastructure not currently
+in mathlib.
 
 **4. Linter overrides.** The build is warning-free. One deliberate,
 documented linter override remains:

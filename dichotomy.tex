@@ -78,20 +78,21 @@ consumes only the implication
 \ex(n;H)=\Theta(n) \;\Longrightarrow\; H^\circ \text{ has at least two edges},
 \]
 and the formalization proves a weakened version sufficient for it.
-Separately, the upper-bound half of the forward direction,
+Separately, the full forward direction of the characterization,
 \[
-H^\circ \text{ a forest} \;\Longrightarrow\; \ex(n;H)=O(n),
+H^\circ \text{ a forest with} \ge 2 \text{ edges}
+  \;\Longrightarrow\; \ex(n;H)=\Theta(n),
 \]
-is now also formalized (module \texttt{Forest.lean}), via a greedy
-leaf-by-leaf embedding of a $k$-vertex forest into any host of minimum
-degree at least $k$; it supplies the Case~(ii) upper bound of the
-structural variant described below. The remaining unformalized piece of
-the classical biconditional is the converse (cycle case), whose known
+is now also formalized (module \texttt{Forest.lean},
+\verb|isThetaLinear_extremal_of_reduced_isAcyclic_of_atLeastTwo|): the
+\(O(n)\) half via a greedy leaf-by-leaf embedding of a $k$-vertex
+forest into any host of minimum degree at least $k$, and the
+\(\Omega(n)\) half via star or matching host constructions. The
+\(O(n)\) half supplies the Case~(ii) upper bound of the structural
+variant described below. The only remaining unformalized piece of the
+classical biconditional is the converse (cycle case), whose known
 proofs need probabilistic tools not found in the surveyed
 \texttt{mathlib4} API.
-% UPGRADE (after single-graph Omega(n) milestone): add that the full
-% forward direction (forest with >= 2 edges => Theta(n)) is formalized,
-% i.e. the Omega(n) half via star/matching host constructions.
 
 \section*{3. The dichotomy}
 
