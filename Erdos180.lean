@@ -5,4 +5,4 @@ import Erdos180.Forest
 import Erdos180.Families.StructuralTheorem
 import Erdos180.Hunter
 import Erdos180.HunterGeneral
-import Erdos180.SharpConstant
+import Erdos180.ExplicitConstant

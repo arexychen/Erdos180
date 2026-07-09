@@ -1,5 +1,15 @@
 import Erdos180.Families.Upper
 
+/-!
+The explicit Case (i) constant from the LaTeX argument: a host graph
+containing neither `K_{1,a}` nor `bK_2` has at most `2*(a-1)*(b-1)`
+edges. "Explicit", not optimal: for graphs with max degree `≤ a-1` and
+matching number `≤ b-1` the true extremal value is smaller
+(Chvátal–Hanson, 1976); this module formalizes the vertex-cover bound
+actually used in `dichotomy.tex`, which is all the `Θ(1)` conclusion
+needs.
+-/
+
 open Filter
 open Asymptotics
 

@@ -198,7 +198,7 @@ Erdos180/
 │   ├── MatchingEdgeFinset.lean                     — matching edge counting
 │   ├── SingleForbidden.lean                        — singleForbiddenGraphLemma (proved)
 │   ├── Forest.lean                                 — forest ⇒ linear extremal number
-│   ├── SharpConstant.lean                          — sharp Case (i) bound 2(a−1)(b−1)
+│   ├── ExplicitConstant.lean                       — explicit Case (i) bound 2(a−1)(b−1)
 │   ├── Hunter.lean                                 — Hunter example, a = b = 2
 │   ├── HunterGeneral.lean                          — Hunter family, all a, b ≥ 2
 │   ├── Families/
@@ -295,7 +295,11 @@ upstreaming) remains future work.
 canonical obstruction pair: a host containing neither `K_{1,a}` nor
 `bK_2` has at most `2(a-1)(b-1)` edges
 (`edgeCount_le_of_star_free_of_matching_free` in
-[`Erdos180/SharpConstant.lean`](Erdos180/SharpConstant.lean)). The
+[`Erdos180/ExplicitConstant.lean`](Erdos180/ExplicitConstant.lean)).
+Note this constant is *explicit*, not optimal — the true extremal
+value for bounded degree and matching number is smaller
+(Chvátal–Hanson); the formalization matches the bound the LaTeX
+argument actually proves. The
 general family theorem retains a weaker internal constant,
 `O(|V(F_star)| · |V(F_matching)|)`, arising from how isolated vertices
 in family members are handled; it suffices for the `Θ(1)` conclusion.
@@ -347,9 +351,10 @@ Erdős-formalization community, particularly useful feedback would be:
   [`dichotomy.tex`](dichotomy.tex) §2 records the full biconditional;
   the formalization only uses one direction.
 - Case (i) constants: the explicit `2(a-1)(b-1)` bound is formalized
-  for the canonical pair (`SharpConstant.lean`); is it worth threading
-  the sharp constant through the general family theorem as well, or is
-  the weaker internal constant acceptable there?
+  for the canonical pair (`ExplicitConstant.lean`); is it worth
+  threading this constant through the general family theorem as well
+  (or even formalizing the optimal Chvátal–Hanson value), or is the
+  weaker internal constant acceptable there?
 - Mathlib gap analysis: is the [`phase1-report.md`](phase1-report.md)
   inventory of mathlib's coverage of probabilistic graph construction
   (high-girth existence, random graph short-cycle expectations,
